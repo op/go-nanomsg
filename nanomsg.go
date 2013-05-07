@@ -37,8 +37,6 @@ const (
 	PAIR = Protocol(C.NN_PAIR)
 )
 
-type Endpoint C.int
-
 type Socket struct {
 	socket C.int
 }
@@ -57,39 +55,40 @@ func NewSocket(domain Domain, protocol Protocol) (*Socket, error) {
 
 // Close a socket.
 func (s *Socket) Close() error {
-	if rc, err := C.nn_close(s.socket); rc != 0 {
-		return nnError(err)
+	if s.socket != 0 {
+		if rc, err := C.nn_close(s.socket); rc != 0 {
+			return nnError(err)
+		}
+		s.socket = C.int(0)
 	}
-
-	s.socket = C.int(0)
 	return nil
 }
 
 // Add a local endpoint to the socket.
-func (s *Socket) Bind(address string) (Endpoint, error) {
+func (s *Socket) Bind(address string) (*Endpoint, error) {
 	cstr := C.CString(address)
 	defer C.free(unsafe.Pointer(cstr))
 	eid, err := C.nn_bind(s.socket, cstr)
 	if eid < 0 {
-		return 0, nnError(err)
+		return nil, nnError(err)
 	}
-	return Endpoint(eid), nil
+	return &Endpoint{address, eid}, nil
 }
 
 // Add a remote endpoint to the socket.
-func (s *Socket) Connect(address string) (Endpoint, error) {
+func (s *Socket) Connect(address string) (*Endpoint, error) {
 	cstr := C.CString(address)
 	defer C.free(unsafe.Pointer(cstr))
 	eid, err := C.nn_connect(s.socket, cstr)
 	if eid < 0 {
-		return 0, nnError(err)
+		return nil, nnError(err)
 	}
-	return Endpoint(eid), nil
+	return &Endpoint{address, eid}, nil
 }
 
 // Removes an endpoint from the socket.
-func (s *Socket) Shutdown(endpoint Endpoint) error {
-	if rc, err := C.nn_shutdown(s.socket, C.int(endpoint)); rc != 0 {
+func (s *Socket) Shutdown(endpoint *Endpoint) error {
+	if rc, err := C.nn_shutdown(s.socket, endpoint.endpoint); rc != 0 {
 		return nnError(err)
 	}
 	return nil
@@ -141,4 +140,13 @@ func finalizeMsg(datap *[]byte) error {
 		return nnError(err)
 	}
 	return nil
+}
+
+type Endpoint struct {
+	Address string
+	endpoint C.int
+}
+
+func (e *Endpoint) String() string {
+	return e.Address
 }

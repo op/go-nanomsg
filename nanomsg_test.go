@@ -44,6 +44,22 @@ func TestReqReqp(t *testing.T) {
 	}
 }
 
+func TestGetSetOpt(t *testing.T) {
+	s, err := NewSocket(SP, REQ)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err = s.SetLinger(256 * time.Millisecond); err != nil {
+		t.Fatal(err)
+	}
+	if linger, err := s.GetLinger(); err != nil {
+		t.Fatal(err)
+	} else if linger != 256 * time.Millisecond {
+		t.Fatal("incorrect time")
+	}
+}
+
 func BenchmarkInprocThroughput(b *testing.B) {
 	b.StopTimer()
 

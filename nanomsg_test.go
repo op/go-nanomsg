@@ -95,7 +95,7 @@ func BenchmarkInprocThroughput(b *testing.B) {
 		}
 	}
 
-	buf := bytes.Repeat([]byte{111}, 1024)
+	buf := bytes.Repeat([]byte{111}, 10240)
 
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {

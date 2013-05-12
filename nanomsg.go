@@ -38,6 +38,11 @@ const (
 	PAIR = Protocol(C.NN_PAIR)
 )
 
+// Sending and receiving can be controlled with these flags.
+const (
+	DontWait = int(C.NN_DONTWAIT)
+)
+
 type Socket struct {
 	socket C.int
 }

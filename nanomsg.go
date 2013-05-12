@@ -95,9 +95,9 @@ func (s *Socket) Shutdown(endpoint *Endpoint) error {
 }
 
 func (s *Socket) Send(data []byte, flags int) error {
-	msg := unsafe.Pointer(&data[0])
-	msgSize := C.size_t(len(data))
-	if size, err := C.nn_send(s.socket, msg, msgSize, C.int(flags)); size < 0 {
+	buf := unsafe.Pointer(&data[0])
+	length := C.size_t(len(data))
+	if size, err := C.nn_send(s.socket, buf, length, C.int(flags)); size < 0 {
 		return nnError(err)
 	}
 
@@ -105,18 +105,18 @@ func (s *Socket) Send(data []byte, flags int) error {
 }
 
 func (s *Socket) Recv(flags int) ([]byte, error) {
-	var size C.int
 	var err error
 	var buf unsafe.Pointer
+	var length C.int
 
-	if size, err = C.nn_recv(s.socket, unsafe.Pointer(&buf), nn_msg, C.int(flags)); size < 0 {
+	if length, err = C.nn_recv(s.socket, unsafe.Pointer(&buf), nn_msg, C.int(flags)); length < 0 {
 		return nil, nnError(err)
 	}
 
 	// TODO why is the latter variant faster than the zero copy variant?
 	zeroCopy := true
 	if zeroCopy {
-		capacity := int(size)
+		capacity := int(length)
 		header := &reflect.SliceHeader{
 			Data: uintptr(buf),
 			Len: capacity,
@@ -126,7 +126,7 @@ func (s *Socket) Recv(flags int) ([]byte, error) {
 		runtime.SetFinalizer(&data, finalizeMsg)
 		return data, nil
 	} else {
-		data := C.GoBytes(buf, size)
+		data := C.GoBytes(buf, length)
 		if rc, err := C.nn_freemsg(buf); rc != 0 {
 			return data, nnError(err)
 		}

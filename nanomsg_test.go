@@ -8,7 +8,6 @@ import (
 	"time"
 )
 
-
 func TestReqReqp(t *testing.T) {
 	var err error
 	var rep, req *Socket
@@ -32,7 +31,7 @@ func TestReqReqp(t *testing.T) {
 	}
 	if data, err := rep.Recv(0); err != nil {
 		t.Fatal(err)
-	} else if (bytes.Compare(data, []byte("ABC")) != 0) {
+	} else if bytes.Compare(data, []byte("ABC")) != 0 {
 		t.Errorf("Unexpected data received: %s", data)
 	}
 
@@ -55,7 +54,7 @@ func TestGetSetOpt(t *testing.T) {
 	}
 	if linger, err := s.GetLinger(); err != nil {
 		t.Fatal(err)
-	} else if linger != 256 * time.Millisecond {
+	} else if linger != 256*time.Millisecond {
 		t.Fatal("incorrect time")
 	}
 }

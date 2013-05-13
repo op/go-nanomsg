@@ -125,8 +125,8 @@ func (s *Socket) Recv(flags int) ([]byte, error) {
 		capacity := int(length)
 		header := &reflect.SliceHeader{
 			Data: uintptr(buf),
-			Len: capacity,
-			Cap: capacity,
+			Len:  capacity,
+			Cap:  capacity,
 		}
 		data := *((*[]byte)(unsafe.Pointer(header)))
 		runtime.SetFinalizer(&data, finalizeMsg)
@@ -148,7 +148,7 @@ func finalizeMsg(datap *[]byte) error {
 	return nil
 }
 
-func (s *Socket) getSockOptInt(level, option C.int) (int, error) {
+func (s *Socket) GetSockOptInt(level, option C.int) (int, error) {
 	var value C.int
 	length := C.size_t(unsafe.Sizeof(value))
 	rc, err := C.nn_getsockopt(s.socket, level, option, unsafe.Pointer(&value), &length)
@@ -159,7 +159,7 @@ func (s *Socket) getSockOptInt(level, option C.int) (int, error) {
 	return int(value), nil
 }
 
-func (s *Socket) setSockOptInt(level, option C.int, value int) error {
+func (s *Socket) SetSockOptInt(level, option C.int, value int) error {
 	val := C.int(value)
 	length := C.size_t(unsafe.Sizeof(val))
 	rc, err := C.nn_setsockopt(s.socket, level, option, unsafe.Pointer(&val), length)
@@ -169,29 +169,39 @@ func (s *Socket) setSockOptInt(level, option C.int, value int) error {
 	return nil
 }
 
-// GetLingerDuration returns how long the socket should try to send pending
-// outbound messages after Close() have been called, in nanoseconds (as defined
-// by time.Duration). Negative value means infinite linger.
-func (s *Socket) GetLinger() (time.Duration, error) {
-	// TODO expose the level (SOL_SOCKET)
-	lingerMs, err := s.getSockOptInt(C.NN_SOL_SOCKET, C.NN_LINGER)
-	linger := time.Duration(lingerMs * 1e6)
+// SetSockOptString sets the value of the option.
+func (s *Socket) SetSockOptString(level, option C.int, value string) error {
+	cstr := C.CString(value)
+	defer C.free(unsafe.Pointer(cstr))
+	length := C.size_t(len(value))
+	rc, err := C.nn_setsockopt(s.socket, level, option, unsafe.Pointer(cstr), length)
+	if rc != 0 {
+		return nnError(err)
+	}
+	return nil
+}
+
+// Linger returns how long the socket should try to send pending outbound
+// messages after Close() have been called, in nanoseconds (as defined by
+// time.Duration). Negative value means infinite linger.
+func (s *Socket) Linger() (time.Duration, error) {
+	lingerMs, err := s.GetSockOptInt(C.NN_SOL_SOCKET, C.NN_LINGER)
+	linger := time.Duration(lingerMs) * time.Millisecond
 	return linger, err
 }
 
-// SetLingerDuration sets how long the socket should try to send pending
-// outbound messages after Close() have been called, in nanoseconds (as defined
-// by time.Duration). Negative value means infinite linger.
+// SetLinger sets how long the socket should try to send pending outbound
+// messages after Close() have been called, in nanoseconds (as defined by
+// time.Duration). Negative value means infinite linger.
 //
 // Default value is 1 second.
 func (s *Socket) SetLinger(linger time.Duration) error {
-	// TODO expose the level (SOL_SOCKET)
-	lingerMs := int(linger / 1e6)
-	return s.setSockOptInt(C.NN_SOL_SOCKET, C.NN_LINGER, lingerMs)
+	lingerMs := int(linger / time.Millisecond)
+	return s.SetSockOptInt(C.NN_SOL_SOCKET, C.NN_LINGER, lingerMs)
 }
 
 type Endpoint struct {
-	Address string
+	Address  string
 	endpoint C.int
 }
 

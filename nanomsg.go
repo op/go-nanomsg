@@ -100,14 +100,17 @@ func (s *Socket) Shutdown(endpoint *Endpoint) error {
 	return nil
 }
 
-func (s *Socket) Send(data []byte, flags int) error {
-	buf := unsafe.Pointer(&data[0])
-	length := C.size_t(len(data))
-	if size, err := C.nn_send(s.socket, buf, length, C.int(flags)); size < 0 {
-		return nnError(err)
+func (s *Socket) Send(data []byte, flags int) (int, error) {
+	var buf unsafe.Pointer
+	if len(data) != 0 {
+		buf = unsafe.Pointer(&data[0])
 	}
-
-	return nil
+	length := C.size_t(len(data))
+	size, err := C.nn_send(s.socket, buf, length, C.int(flags))
+	if size < 0 {
+		return int(size), nnError(err)
+	}
+	return int(size), nil
 }
 
 func (s *Socket) Recv(flags int) ([]byte, error) {

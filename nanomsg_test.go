@@ -26,7 +26,7 @@ func TestReqReqp(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = req.Send([]byte("ABC"), 0); err != nil {
+	if _, err = req.Send([]byte("ABC"), 0); err != nil {
 		t.Fatal(err)
 	}
 	if data, err := rep.Recv(0); err != nil {
@@ -75,7 +75,7 @@ func BenchmarkInprocThroughput(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			if data, err := s.Recv(0); err != nil {
 				b.Fatal(err)
-			} else if err = s.Send(data, 0); err != nil {
+			} else if _, err = s.Send(data, 0); err != nil {
 				b.Fatal(err)
 			}
 		}
@@ -114,13 +114,13 @@ func BenchmarkInprocThroughput(b *testing.B) {
 
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		if err = s.Send(buf, 0); err != nil {
+		if _, err = s.Send(buf, 0); err != nil {
 			b.Fatal(err)
 		}
 		if !fixme {
 			if data, err := s2.Recv(0); err != nil {
 				b.Fatal(err)
-			} else if err = s2.Send(data, 0); err != nil {
+			} else if _, err = s2.Send(data, 0); err != nil {
 				b.Fatal(err)
 			}
 		}

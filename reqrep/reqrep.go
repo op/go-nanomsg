@@ -8,8 +8,7 @@ import "C"
 import (
 	"time"
 
-	//"github.com/op/go-nanomsg"
-	".."
+	"github.com/op/go-nanomsg"
 )
 
 type ReqSocket struct {

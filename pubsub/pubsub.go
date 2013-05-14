@@ -6,8 +6,7 @@ package pubsub
 import "C"
 
 import (
-	//"github.com/op/go-nanomsg"
-	".."
+	"github.com/op/go-nanomsg"
 )
 
 type SubSocket struct {

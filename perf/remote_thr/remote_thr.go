@@ -6,7 +6,7 @@ import (
 	"os"
 	"strconv"
 
-	"../.."
+	"github.com/op/go-nanomsg"
 )
 
 func main() {

@@ -19,18 +19,19 @@ type SubSocket struct {
 // be received. Send operation is not defined on this socket. The socket can
 // be connected to at most one peer.
 func NewSubSocket() (*SubSocket, error) {
+	// TODO remove nanomsg.SP option and expose NewRawSocket (?and NewSubRawSocket()?)
 	socket, err := nanomsg.NewSocket(nanomsg.SP, C.NN_SUB)
 	return &SubSocket{socket}, err
 }
 
 // Subscribe subscribes to a particular topic.
 func (sub *SubSocket) Subscribe(topic string) error {
-	return sub.Socket.SetSockOptString(C.NN_SUB, C.NN_SUB_SUBSCRIBE, topic)
+	return sub.SetSockOptString(C.NN_SUB, C.NN_SUB_SUBSCRIBE, topic)
 }
 
 // Unsubscribe unsubscribes from a particular topic.
 func (sub *SubSocket) Unsubscribe(topic string) error {
-	return sub.Socket.SetSockOptString(C.NN_SUB, C.NN_SUB_UNSUBSCRIBE, topic)
+	return sub.SetSockOptString(C.NN_SUB, C.NN_SUB_UNSUBSCRIBE, topic)
 }
 
 type PubSocket struct {

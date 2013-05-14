@@ -32,8 +32,8 @@ func (req *ReqSocket) ResendIvl() (time.Duration, error) {
 
 // SetResendIvl sets the resend interval for requests.
 func (req *ReqSocket) SetResendIvl(ivl time.Duration) error {
-	ivlMs := int(linger / time.Millisecond)
-	return s.SetSockOptInt(C.NN_REQ, C.NN_REQ_RESEND_IVL, lingerMs)
+	ivlMs := int(ivl / time.Millisecond)
+	return req.Socket.SetSockOptInt(C.NN_REQ, C.NN_REQ_RESEND_IVL, ivlMs)
 }
 
 type RepSocket struct {

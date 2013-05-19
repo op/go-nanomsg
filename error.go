@@ -45,17 +45,17 @@ func (e Errno) Error() string {
 // automatically make errors found in the nanomsg library to map nicely to the
 // ones users would expect in Go.
 var errnoMap = map[syscall.Errno]syscall.Errno{
-	syscall.Errno(int(C.ENOTSUP)): syscall.ENOTSUP,
+	syscall.Errno(int(C.ENOTSUP)):         syscall.ENOTSUP,
 	syscall.Errno(int(C.EPROTONOSUPPORT)): syscall.EPROTONOSUPPORT,
-	syscall.Errno(int(C.ENOBUFS)): syscall.ENOBUFS,
-	syscall.Errno(int(C.ENETDOWN)): syscall.ENETDOWN,
-	syscall.Errno(int(C.EADDRINUSE)): syscall.EADDRINUSE,
-	syscall.Errno(int(C.EADDRNOTAVAIL)): syscall.EADDRNOTAVAIL,
-	syscall.Errno(int(C.ECONNREFUSED)): syscall.ECONNREFUSED,
-	syscall.Errno(int(C.EINPROGRESS)): syscall.EINPROGRESS,
-	syscall.Errno(int(C.ENOTSOCK)): syscall.ENOTSOCK,
-	syscall.Errno(int(C.EAFNOSUPPORT)): syscall.EAFNOSUPPORT,
-	syscall.Errno(int(C.EPROTO)): syscall.EPROTO,
+	syscall.Errno(int(C.ENOBUFS)):         syscall.ENOBUFS,
+	syscall.Errno(int(C.ENETDOWN)):        syscall.ENETDOWN,
+	syscall.Errno(int(C.EADDRINUSE)):      syscall.EADDRINUSE,
+	syscall.Errno(int(C.EADDRNOTAVAIL)):   syscall.EADDRNOTAVAIL,
+	syscall.Errno(int(C.ECONNREFUSED)):    syscall.ECONNREFUSED,
+	syscall.Errno(int(C.EINPROGRESS)):     syscall.EINPROGRESS,
+	syscall.Errno(int(C.ENOTSOCK)):        syscall.ENOTSOCK,
+	syscall.Errno(int(C.EAFNOSUPPORT)):    syscall.EAFNOSUPPORT,
+	syscall.Errno(int(C.EPROTO)):          syscall.EPROTO,
 }
 
 // nnError takes an error returned from the C nanomsg library and transforms it

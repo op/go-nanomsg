@@ -196,26 +196,28 @@ func (s *Socket) SetLinger(linger time.Duration) error {
 // prevent blocking for messages larger than the buffer, exactly one
 // message may be buffered in addition to the data in the send buffer.
 // Default value is 128kB.
-func (s *Socket) SendBuffer() (int, error) {
-	return s.GetSockOptInt(C.NN_SOL_SOCKET, C.NN_SNDBUF)
+func (s *Socket) SendBuffer() (int64, error) {
+	size, err := s.GetSockOptInt(C.NN_SOL_SOCKET, C.NN_SNDBUF)
+	return int64(size), err
 }
 
 // SetSendBuffer sets the send buffer size.
-func (s *Socket) SetSendBuffer(sndBuf int) error {
-	return s.SetSockOptInt(C.NN_SOL_SOCKET, C.NN_SNDBUF, sndBuf)
+func (s *Socket) SetSendBuffer(sndBuf int64) error {
+	return s.SetSockOptInt(C.NN_SOL_SOCKET, C.NN_SNDBUF, int(sndBuf))
 }
 
 // RecvBuffer returns the size of the receive buffer, in bytes. To
 // prevent blocking for messages larger than the buffer, exactly one
 // message may be buffered in addition to the data in the receive
 // buffer. Default value is 128kB.
-func (s *Socket) RecvBuffer() (int, error) {
-	return s.GetSockOptInt(C.NN_SOL_SOCKET, C.NN_RCVBUF)
+func (s *Socket) RecvBuffer() (int64, error) {
+	size, err := s.GetSockOptInt(C.NN_SOL_SOCKET, C.NN_RCVBUF)
+	return int64(size), err
 }
 
 // SetRecvBuffer sets the receive buffer size.
-func (s *Socket) SetRecvBuffer(rcvBuf int) error {
-	return s.SetSockOptInt(C.NN_SOL_SOCKET, C.NN_RCVBUF, rcvBuf)
+func (s *Socket) SetRecvBuffer(rcvBuf int64) error {
+	return s.SetSockOptInt(C.NN_SOL_SOCKET, C.NN_RCVBUF, int(rcvBuf))
 }
 
 // SendTimeout returns the timeout for send operation on the socket.

@@ -26,8 +26,7 @@ func main() {
 		panic(err)
 	}
 
-	// TODO define pair socket?
-	s, err := nanomsg.NewSocket(nanomsg.SP, nanomsg.PAIR)
+	s, err := nanomsg.NewSocket(nanomsg.AF_SP, nanomsg.PAIR)
 	if err != nil {
 		panic(err)
 	}

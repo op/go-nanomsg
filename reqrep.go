@@ -1,24 +1,27 @@
 // Go binding for nanomsg
 
-package reqrep
+package nanomsg
 
 // #include <nanomsg/reqrep.h>
 import "C"
 
 import (
 	"time"
+)
 
-	"github.com/op/go-nanomsg"
+const (
+	REQ = Protocol(C.NN_REQ)
+	REP = Protocol(C.NN_REP)
 )
 
 type ReqSocket struct {
-	*nanomsg.Socket
+	*Socket
 }
 
 // NewReqSocket creates a request socket used to implement the client
 // application that sends requests and receives replies.
 func NewReqSocket() (*ReqSocket, error) {
-	socket, err := nanomsg.NewSocket(nanomsg.SP, C.NN_REQ)
+	socket, err := NewSocket(AF_SP, REQ)
 	return &ReqSocket{socket}, err
 }
 
@@ -37,12 +40,12 @@ func (req *ReqSocket) SetResendIvl(ivl time.Duration) error {
 }
 
 type RepSocket struct {
-	*nanomsg.Socket
+	*Socket
 }
 
 // NewRepSocket creates a reply socket used to implement the stateless worker
 // that receives requests and sends replies.
 func NewRepSocket() (*RepSocket, error) {
-	socket, err := nanomsg.NewSocket(nanomsg.SP, C.NN_REP)
+	socket, err := NewSocket(AF_SP, REP)
 	return &RepSocket{socket}, err
 }

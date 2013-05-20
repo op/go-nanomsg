@@ -4,7 +4,6 @@ package nanomsg
 
 // #include <nanomsg/nn.h>
 // #include <nanomsg/pair.h>
-// #include <nanomsg/reqrep.h>
 // #include <stdlib.h>
 // #cgo LDFLAGS: -lnanomsg
 import "C"
@@ -23,20 +22,12 @@ const nn_msg = ^C.size_t(0)
 type Domain int
 
 const (
-	SP     = Domain(C.AF_SP)
-	SP_RAW = Domain(C.AF_SP_RAW)
+	AF_SP     = Domain(C.AF_SP)
+	AF_SP_RAW = Domain(C.AF_SP_RAW)
 )
 
 type Protocol int
 
-const (
-	// reqrep.h
-	REQ = Protocol(C.NN_REQ)
-	REP = Protocol(C.NN_REP)
-
-	// pair.h
-	PAIR = Protocol(C.NN_PAIR)
-)
 
 // Sending and receiving can be controlled with these flags.
 const (

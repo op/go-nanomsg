@@ -13,13 +13,13 @@ func TestReqReqp(t *testing.T) {
 	var rep, req *Socket
 	socketAddress := "inproc://a"
 
-	if rep, err = NewSocket(SP, REP); err != nil {
+	if rep, err = NewSocket(AF_SP, REP); err != nil {
 		t.Fatal(err)
 	}
 	if _, err = rep.Bind(socketAddress); err != nil {
 		t.Fatal(err)
 	}
-	if req, err = NewSocket(SP, REQ); err != nil {
+	if req, err = NewSocket(AF_SP, REQ); err != nil {
 		t.Fatal(err)
 	}
 	if _, err = req.Connect(socketAddress); err != nil {
@@ -44,7 +44,7 @@ func TestReqReqp(t *testing.T) {
 }
 
 func TestGetSetOpt(t *testing.T) {
-	s, err := NewSocket(SP, REQ)
+	s, err := NewSocket(AF_SP, REQ)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -65,7 +65,7 @@ func BenchmarkInprocThroughput(b *testing.B) {
 	worker := func() {
 		var err error
 		var s *Socket
-		if s, err = NewSocket(SP, PAIR); err != nil {
+		if s, err = NewSocket(AF_SP, PAIR); err != nil {
 			b.Fatal(err)
 		}
 		if _, err = s.Connect("inproc://inproc_bench"); err != nil {
@@ -87,7 +87,7 @@ func BenchmarkInprocThroughput(b *testing.B) {
 
 	var err error
 	var s *Socket
-	if s, err = NewSocket(SP, PAIR); err != nil {
+	if s, err = NewSocket(AF_SP, PAIR); err != nil {
 		b.Fatal(err)
 	}
 	if _, err = s.Bind("inproc://inproc_bench"); err != nil {
@@ -102,7 +102,7 @@ func BenchmarkInprocThroughput(b *testing.B) {
 		go worker()
 		time.Sleep(0 * 100 * time.Nanosecond)
 	} else {
-		if s2, err = NewSocket(SP, PAIR); err != nil {
+		if s2, err = NewSocket(AF_SP, PAIR); err != nil {
 			b.Fatal(err)
 		}
 		if _, err = s2.Connect("inproc://inproc_bench"); err != nil {
@@ -140,7 +140,7 @@ func BenchmarkInprocThroughput(b *testing.B) {
 }
 
 func ExampleBind(t *testing.T) {
-	socket, err := NewSocket(SP, REP)
+	socket, err := NewSocket(AF_SP, REP)
 	if err != nil {
 		panic(err)
 	}

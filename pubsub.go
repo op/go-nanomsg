@@ -1,16 +1,17 @@
 // Go binding for nanomsg
 
-package pubsub
+package nanomsg
 
 // #include <nanomsg/pubsub.h>
 import "C"
 
-import (
-	"github.com/op/go-nanomsg"
+const (
+	PUB = Protocol(C.NN_PUB)
+	SUB = Protocol(C.NN_SUB)
 )
 
 type SubSocket struct {
-	*nanomsg.Socket
+	*Socket
 }
 
 // NewSubSocket creates a new socket which receives messages from the
@@ -19,8 +20,7 @@ type SubSocket struct {
 // be received. Send operation is not defined on this socket. The socket can
 // be connected to at most one peer.
 func NewSubSocket() (*SubSocket, error) {
-	// TODO remove nanomsg.SP option and expose NewRawSocket (?and NewSubRawSocket()?)
-	socket, err := nanomsg.NewSocket(nanomsg.SP, C.NN_SUB)
+	socket, err := NewSocket(AF_SP, SUB)
 	return &SubSocket{socket}, err
 }
 
@@ -35,12 +35,12 @@ func (sub *SubSocket) Unsubscribe(topic string) error {
 }
 
 type PubSocket struct {
-	*nanomsg.Socket
+	*Socket
 }
 
 // NewPubSocket creates a new socket which is used to distribute messages to
 // multiple destinations. Receive operation is not defined.
 func NewPubSocket() (*PubSocket, error) {
-	socket, err := nanomsg.NewSocket(nanomsg.SP, C.NN_PUB)
+	socket, err := NewSocket(AF_SP, PUB)
 	return &PubSocket{socket}, err
 }

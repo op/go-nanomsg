@@ -1,6 +1,6 @@
 // Go binding for nanomsg
 
-package pubsub
+package nanomsg
 
 import (
 	"testing"

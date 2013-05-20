@@ -10,7 +10,7 @@ import (
 func TestError(t *testing.T) {
 	var err error
 	var s *Socket
-	if s, err = NewSocket(SP, REP); err != nil {
+	if s, err = NewSocket(AF_SP, REP); err != nil {
 		t.Fatal(err)
 	}
 	// TODO inproc://a isn't available, even tho close is called?

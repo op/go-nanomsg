@@ -3,7 +3,6 @@
 package nanomsg
 
 // #include <nanomsg/nn.h>
-// #include <nanomsg/pair.h>
 // #include <stdlib.h>
 // #cgo LDFLAGS: -lnanomsg
 import "C"
@@ -27,7 +26,6 @@ const (
 )
 
 type Protocol int
-
 
 // Sending and receiving can be controlled with these flags.
 const (
@@ -192,6 +190,142 @@ func (s *Socket) Linger() (time.Duration, error) {
 func (s *Socket) SetLinger(linger time.Duration) error {
 	lingerMs := int(linger / time.Millisecond)
 	return s.SetSockOptInt(C.NN_SOL_SOCKET, C.NN_LINGER, lingerMs)
+}
+
+// SendBuffer returns the size of the send buffer, in bytes. To
+// prevent blocking for messages larger than the buffer, exactly one
+// message may be buffered in addition to the data in the send buffer.
+// Default value is 128kB.
+func (s *Socket) SendBuffer() (int, error) {
+	return s.GetSockOptInt(C.NN_SOL_SOCKET, C.NN_SNDBUF)
+}
+
+// SetSendBuffer sets the send buffer size.
+func (s *Socket) SetSendBuffer(sndBuf int) error {
+	return s.SetSockOptInt(C.NN_SOL_SOCKET, C.NN_SNDBUF, sndBuf)
+}
+
+// RecvBuffer returns the size of the receive buffer, in bytes. To
+// prevent blocking for messages larger than the buffer, exactly one
+// message may be buffered in addition to the data in the receive
+// buffer. Default value is 128kB.
+func (s *Socket) RecvBuffer() (int, error) {
+	return s.GetSockOptInt(C.NN_SOL_SOCKET, C.NN_RCVBUF)
+}
+
+// SetRecvBuffer sets the receive buffer size.
+func (s *Socket) SetRecvBuffer(rcvBuf int) error {
+	return s.SetSockOptInt(C.NN_SOL_SOCKET, C.NN_RCVBUF, rcvBuf)
+}
+
+// SendTimeout returns the timeout for send operation on the socket.
+// If message cannot be sent within the specified timeout, EAGAIN
+// error is returned. Negative value means infinite timeout. Default
+// value is -1.
+func (s *Socket) SendTimeout() (time.Duration, error) {
+	timeoutMs, err := s.GetSockOptInt(C.NN_SOL_SOCKET, C.NN_SNDTIMEO)
+	timeout := time.Duration(timeoutMs)
+	if timeout >= 0 {
+		timeout *= time.Millisecond
+	}
+	return timeout, err
+}
+
+// SetSendTimeout sets the timeout for send operations.
+func (s *Socket) SetSendTimeout(timeout time.Duration) error {
+	timeoutMs := int(timeout / time.Millisecond)
+	return s.SetSockOptInt(C.NN_SOL_SOCKET, C.NN_SNDTIMEO, timeoutMs)
+}
+
+// RecvTimeout returns the timeout for recv operation on the
+// socket. If message cannot be received within the specified timeout,
+// EAGAIN error is returned. Negative value means infinite timeout.
+// Default value is -1.
+func (s *Socket) RecvTimeout() (time.Duration, error) {
+	timeoutMs, err := s.GetSockOptInt(C.NN_SOL_SOCKET, C.NN_RCVTIMEO)
+	timeout := time.Duration(timeoutMs)
+	if timeout >= 0 {
+		timeout *= time.Millisecond
+	}
+	return timeout, err
+}
+
+// SetRecvTimeout sets the timeout for recv operations.
+func (s *Socket) SetRecvTimeout(timeout time.Duration) error {
+	timeoutMs := int(timeout / time.Millisecond)
+	return s.SetSockOptInt(C.NN_SOL_SOCKET, C.NN_RCVTIMEO, timeoutMs)
+}
+
+// ReconnectInterval, for connection-based transports such as TCP,
+// this option specifies how long to wait, when connection is broken
+// before trying to re-establish it. Note that actual reconnect
+// interval may be randomised to some extent to prevent severe
+// reconnection storms. Default value is 0.1 second.
+func (s *Socket) ReconnectInterval() (time.Duration, error) {
+	ivlMs, err := s.GetSockOptInt(C.NN_SOL_SOCKET, C.NN_RECONNECT_IVL)
+	ivl := time.Duration(ivlMs) * time.Millisecond
+	return ivl, err
+}
+
+// SetReconnectInterval sets the reconnect interval.
+func (s *Socket) SetReconnectInterval(interval time.Duration) error {
+	ivlMs := int(interval / time.Millisecond)
+	return s.SetSockOptInt(C.NN_SOL_SOCKET, C.NN_RECONNECT_IVL, ivlMs)
+}
+
+// ReconnectIntervalMax, together with ReconnectInterval, specifies
+// maximum reconnection interval. On each reconnect attempt, the
+// previous interval is doubled until this value is reached. Value of
+// zero means that no exponential backoff is performed and reconnect
+// interval is based only on the reconnect interval. If this value is
+// less than the reconnect interval, it is ignored. Default value is
+// 0.
+func (s *Socket) ReconnectIntervalMax() (time.Duration, error) {
+	ivlMs, err := s.GetSockOptInt(C.NN_SOL_SOCKET, C.NN_RECONNECT_IVL_MAX)
+	ivl := time.Duration(ivlMs) * time.Millisecond
+	return ivl, err
+}
+
+// SetReconnectIntervalMax sets the maximum reconnect interval.
+func (s *Socket) SetReconnectIntervalMax(interval time.Duration) error {
+	ivlMs := int(interval / time.Millisecond)
+	return s.SetSockOptInt(C.NN_SOL_SOCKET, C.NN_RECONNECT_IVL_MAX, ivlMs)
+}
+
+// SendPrio sets outbound priority for endpoints subsequently added to
+// the socket. This option has no effect on socket types that send
+// messages to all the peers. However, if the socket type sends each
+// message to a single peer (or a limited set of peers), peers with
+// high priority take precedence over peers with low priority. The
+// type of the option is int. Highest priority is 1, lowest priority
+// is 16. Default value is 8.
+func (s *Socket) SendPrio() (int, error) {
+	return s.GetSockOptInt(C.NN_SOL_SOCKET, C.NN_SNDPRIO)
+}
+
+// SetSendPrio sets the sending priority.
+func (s *Socket) SetSendPrio(sndPrio int) error {
+	return s.SetSockOptInt(C.NN_SOL_SOCKET, C.NN_SNDPRIO, sndPrio)
+}
+
+func (s *Socket) SendFd() (uintptr, error) {
+	fd, err := s.GetSockOptInt(C.NN_SOL_SOCKET, C.NN_SNDFD)
+	return uintptr(fd), err
+}
+
+func (s *Socket) RecvFd() (uintptr, error) {
+	fd, err := s.GetSockOptInt(C.NN_SOL_SOCKET, C.NN_RCVFD)
+	return uintptr(fd), err
+}
+
+func (s *Socket) Domain() (Domain, error) {
+	domain, err := s.GetSockOptInt(C.NN_SOL_SOCKET, C.NN_DOMAIN)
+	return Domain(domain), err
+}
+
+func (s *Socket) Protocol() (Protocol, error) {
+	proto, err := s.GetSockOptInt(C.NN_SOL_SOCKET, C.NN_PROTOCOL)
+	return Protocol(proto), err
 }
 
 type Endpoint struct {

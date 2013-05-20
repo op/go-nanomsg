@@ -57,6 +57,18 @@ func TestGetSetOpt(t *testing.T) {
 	} else if linger != 256*time.Millisecond {
 		t.Fatal("incorrect time")
 	}
+
+	if timeout, err := s.SendTimeout(); err != nil {
+		t.Fatal(err)
+	} else if timeout != -1 {
+		t.Fatal("incorrect timeout", timeout)
+	}
+
+	if protocol, err := s.Protocol(); err != nil {
+		t.Fatal(err)
+	} else if protocol != REQ {
+		t.Fatal(protocol)
+	}
 }
 
 func BenchmarkInprocThroughput(b *testing.B) {

@@ -34,6 +34,7 @@ const (
 
 type Socket struct {
 	socket C.int
+	closed bool
 }
 
 // Create a socket.
@@ -43,18 +44,18 @@ func NewSocket(domain Domain, protocol Protocol) (*Socket, error) {
 		return nil, nnError(err)
 	}
 
-	socket := &Socket{soc}
+	socket := &Socket{socket: soc}
 	runtime.SetFinalizer(socket, (*Socket).Close)
 	return socket, nil
 }
 
 // Close a socket.
 func (s *Socket) Close() error {
-	if s.socket != 0 {
+	if s.closed == false {
 		if rc, err := C.nn_close(s.socket); rc != 0 {
 			return nnError(err)
 		}
-		s.socket = C.int(0)
+		s.closed = true
 	}
 	return nil
 }

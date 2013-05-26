@@ -30,16 +30,14 @@ func NewSurveyorSocket() (*SurveyorSocket, error) {
 
 // Deadline returns the deadline for the surveyor. Default value is 1 second.
 func (s *SurveyorSocket) Deadline() (time.Duration, error) {
-	deadline, err := s.Socket.GetSockOptInt(C.NN_SURVEYOR, C.NN_SURVEYOR_DEADLINE)
-	return time.Duration(deadline) * time.Millisecond, err
+	return s.Socket.SockOptDuration(C.NN_SURVEYOR, C.NN_SURVEYOR_DEADLINE, time.Millisecond)
 }
 
 // SetDeadline specifies how long to wait for responses to the survey. Once
 // the deadline expires, receive function will return ETIMEDOUT error and
 // all subsequent responses to the survey will be silently dropped.
 func (s *SurveyorSocket) SetDeadline(deadline time.Duration) error {
-	deadlineMs := int(deadline / time.Millisecond)
-	return s.Socket.SetSockOptInt(C.NN_SURVEYOR, C.NN_SURVEYOR_DEADLINE, deadlineMs)
+	return s.Socket.SetSockOptDuration(C.NN_SURVEYOR, C.NN_SURVEYOR_DEADLINE, time.Millisecond, deadline)
 }
 
 type RespondentSocket struct {

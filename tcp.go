@@ -7,7 +7,7 @@ import "C"
 
 // TcpNoDelay returns the current value of TCP no delay.
 func (s *Socket) TcpNoDelay() (bool, error) {
-	noDelay, err := s.GetSockOptInt(C.NN_TCP, C.NN_TCP_NODELAY)
+	noDelay, err := s.SockOptInt(C.NN_TCP, C.NN_TCP_NODELAY)
 	return noDelay != 0, err
 }
 

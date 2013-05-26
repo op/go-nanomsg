@@ -141,7 +141,7 @@ func finalizeMsg(datap *[]byte) error {
 	return nil
 }
 
-func (s *Socket) GetSockOptInt(level, option C.int) (int, error) {
+func (s *Socket) SockOptInt(level, option C.int) (int, error) {
 	var value C.int
 	length := C.size_t(unsafe.Sizeof(value))
 	rc, err := C.nn_getsockopt(s.socket, level, option, unsafe.Pointer(&value), &length)
@@ -162,6 +162,19 @@ func (s *Socket) SetSockOptInt(level, option C.int, value int) error {
 	return nil
 }
 
+// SockOptDuration retrieves the socket option as duration. unit is
+// used to specify the unit which nanomsg exposes the option as.
+func (s *Socket) SockOptDuration(level, option C.int, unit time.Duration) (time.Duration, error) {
+	value, err := s.SockOptInt(level, option)
+	return time.Duration(value) * unit, err
+}
+
+// SetSockOptDuration sets the socket option as duration. unit is
+// used to specify the unit which nanomsg exposes the option as.
+func (s *Socket) SetSockOptDuration(level, option C.int, unit, value time.Duration) error {
+	return s.SetSockOptInt(level, option, int(value / unit))
+}
+
 // SetSockOptString sets the value of the option.
 func (s *Socket) SetSockOptString(level, option C.int, value string) error {
 	cstr := C.CString(value)
@@ -175,12 +188,10 @@ func (s *Socket) SetSockOptString(level, option C.int, value string) error {
 }
 
 // Linger returns how long the socket should try to send pending outbound
-// messages after Close() have been called, in nanoseconds (as defined by
-// time.Duration). Negative value means infinite linger.
+// messages after Close() have been called. Negative value means
+// infinite linger.
 func (s *Socket) Linger() (time.Duration, error) {
-	lingerMs, err := s.GetSockOptInt(C.NN_SOL_SOCKET, C.NN_LINGER)
-	linger := time.Duration(lingerMs) * time.Millisecond
-	return linger, err
+	return s.SockOptDuration(C.NN_SOL_SOCKET, C.NN_LINGER, time.Millisecond)
 }
 
 // SetLinger sets how long the socket should try to send pending outbound
@@ -189,8 +200,7 @@ func (s *Socket) Linger() (time.Duration, error) {
 //
 // Default value is 1 second.
 func (s *Socket) SetLinger(linger time.Duration) error {
-	lingerMs := int(linger / time.Millisecond)
-	return s.SetSockOptInt(C.NN_SOL_SOCKET, C.NN_LINGER, lingerMs)
+	return s.SetSockOptDuration(C.NN_SOL_SOCKET, C.NN_LINGER, time.Millisecond, linger)
 }
 
 // SendBuffer returns the size of the send buffer, in bytes. To
@@ -198,7 +208,7 @@ func (s *Socket) SetLinger(linger time.Duration) error {
 // message may be buffered in addition to the data in the send buffer.
 // Default value is 128kB.
 func (s *Socket) SendBuffer() (int64, error) {
-	size, err := s.GetSockOptInt(C.NN_SOL_SOCKET, C.NN_SNDBUF)
+	size, err := s.SockOptInt(C.NN_SOL_SOCKET, C.NN_SNDBUF)
 	return int64(size), err
 }
 
@@ -212,7 +222,7 @@ func (s *Socket) SetSendBuffer(sndBuf int64) error {
 // message may be buffered in addition to the data in the receive
 // buffer. Default value is 128kB.
 func (s *Socket) RecvBuffer() (int64, error) {
-	size, err := s.GetSockOptInt(C.NN_SOL_SOCKET, C.NN_RCVBUF)
+	size, err := s.SockOptInt(C.NN_SOL_SOCKET, C.NN_RCVBUF)
 	return int64(size), err
 }
 
@@ -224,39 +234,27 @@ func (s *Socket) SetRecvBuffer(rcvBuf int64) error {
 // SendTimeout returns the timeout for send operation on the socket.
 // If message cannot be sent within the specified timeout, EAGAIN
 // error is returned. Negative value means infinite timeout. Default
-// value is -1.
+// value is infinite.
 func (s *Socket) SendTimeout() (time.Duration, error) {
-	timeoutMs, err := s.GetSockOptInt(C.NN_SOL_SOCKET, C.NN_SNDTIMEO)
-	timeout := time.Duration(timeoutMs)
-	if timeout >= 0 {
-		timeout *= time.Millisecond
-	}
-	return timeout, err
+	return s.SockOptDuration(C.NN_SOL_SOCKET, C.NN_SNDTIMEO, time.Millisecond)
 }
 
 // SetSendTimeout sets the timeout for send operations.
 func (s *Socket) SetSendTimeout(timeout time.Duration) error {
-	timeoutMs := int(timeout / time.Millisecond)
-	return s.SetSockOptInt(C.NN_SOL_SOCKET, C.NN_SNDTIMEO, timeoutMs)
+	return s.SetSockOptDuration(C.NN_SOL_SOCKET, C.NN_SNDTIMEO, time.Millisecond, timeout)
 }
 
 // RecvTimeout returns the timeout for recv operation on the
 // socket. If message cannot be received within the specified timeout,
 // EAGAIN error is returned. Negative value means infinite timeout.
-// Default value is -1.
+// Default value is infinite.
 func (s *Socket) RecvTimeout() (time.Duration, error) {
-	timeoutMs, err := s.GetSockOptInt(C.NN_SOL_SOCKET, C.NN_RCVTIMEO)
-	timeout := time.Duration(timeoutMs)
-	if timeout >= 0 {
-		timeout *= time.Millisecond
-	}
-	return timeout, err
+	return s.SockOptDuration(C.NN_SOL_SOCKET, C.NN_RCVTIMEO, time.Millisecond)
 }
 
 // SetRecvTimeout sets the timeout for recv operations.
 func (s *Socket) SetRecvTimeout(timeout time.Duration) error {
-	timeoutMs := int(timeout / time.Millisecond)
-	return s.SetSockOptInt(C.NN_SOL_SOCKET, C.NN_RCVTIMEO, timeoutMs)
+	return s.SetSockOptDuration(C.NN_SOL_SOCKET, C.NN_RCVTIMEO, time.Millisecond, timeout)
 }
 
 // ReconnectInterval, for connection-based transports such as TCP,
@@ -265,15 +263,12 @@ func (s *Socket) SetRecvTimeout(timeout time.Duration) error {
 // interval may be randomised to some extent to prevent severe
 // reconnection storms. Default value is 0.1 second.
 func (s *Socket) ReconnectInterval() (time.Duration, error) {
-	ivlMs, err := s.GetSockOptInt(C.NN_SOL_SOCKET, C.NN_RECONNECT_IVL)
-	ivl := time.Duration(ivlMs) * time.Millisecond
-	return ivl, err
+	return s.SockOptDuration(C.NN_SOL_SOCKET, C.NN_RECONNECT_IVL, time.Millisecond)
 }
 
 // SetReconnectInterval sets the reconnect interval.
 func (s *Socket) SetReconnectInterval(interval time.Duration) error {
-	ivlMs := int(interval / time.Millisecond)
-	return s.SetSockOptInt(C.NN_SOL_SOCKET, C.NN_RECONNECT_IVL, ivlMs)
+	return s.SetSockOptDuration(C.NN_SOL_SOCKET, C.NN_RECONNECT_IVL, time.Millisecond, interval)
 }
 
 // ReconnectIntervalMax, together with ReconnectInterval, specifies
@@ -284,15 +279,12 @@ func (s *Socket) SetReconnectInterval(interval time.Duration) error {
 // less than the reconnect interval, it is ignored. Default value is
 // 0.
 func (s *Socket) ReconnectIntervalMax() (time.Duration, error) {
-	ivlMs, err := s.GetSockOptInt(C.NN_SOL_SOCKET, C.NN_RECONNECT_IVL_MAX)
-	ivl := time.Duration(ivlMs) * time.Millisecond
-	return ivl, err
+	return s.SockOptDuration(C.NN_SOL_SOCKET, C.NN_RECONNECT_IVL_MAX, time.Millisecond)
 }
 
 // SetReconnectIntervalMax sets the maximum reconnect interval.
 func (s *Socket) SetReconnectIntervalMax(interval time.Duration) error {
-	ivlMs := int(interval / time.Millisecond)
-	return s.SetSockOptInt(C.NN_SOL_SOCKET, C.NN_RECONNECT_IVL_MAX, ivlMs)
+	return s.SetSockOptDuration(C.NN_SOL_SOCKET, C.NN_RECONNECT_IVL_MAX, time.Millisecond, interval)
 }
 
 // SendPrio sets outbound priority for endpoints subsequently added to
@@ -303,7 +295,7 @@ func (s *Socket) SetReconnectIntervalMax(interval time.Duration) error {
 // type of the option is int. Highest priority is 1, lowest priority
 // is 16. Default value is 8.
 func (s *Socket) SendPrio() (int, error) {
-	return s.GetSockOptInt(C.NN_SOL_SOCKET, C.NN_SNDPRIO)
+	return s.SockOptInt(C.NN_SOL_SOCKET, C.NN_SNDPRIO)
 }
 
 // SetSendPrio sets the sending priority.
@@ -312,22 +304,22 @@ func (s *Socket) SetSendPrio(sndPrio int) error {
 }
 
 func (s *Socket) SendFd() (uintptr, error) {
-	fd, err := s.GetSockOptInt(C.NN_SOL_SOCKET, C.NN_SNDFD)
+	fd, err := s.SockOptInt(C.NN_SOL_SOCKET, C.NN_SNDFD)
 	return uintptr(fd), err
 }
 
 func (s *Socket) RecvFd() (uintptr, error) {
-	fd, err := s.GetSockOptInt(C.NN_SOL_SOCKET, C.NN_RCVFD)
+	fd, err := s.SockOptInt(C.NN_SOL_SOCKET, C.NN_RCVFD)
 	return uintptr(fd), err
 }
 
 func (s *Socket) Domain() (Domain, error) {
-	domain, err := s.GetSockOptInt(C.NN_SOL_SOCKET, C.NN_DOMAIN)
+	domain, err := s.SockOptInt(C.NN_SOL_SOCKET, C.NN_DOMAIN)
 	return Domain(domain), err
 }
 
 func (s *Socket) Protocol() (Protocol, error) {
-	proto, err := s.GetSockOptInt(C.NN_SOL_SOCKET, C.NN_PROTOCOL)
+	proto, err := s.SockOptInt(C.NN_SOL_SOCKET, C.NN_PROTOCOL)
 	return Protocol(proto), err
 }
 

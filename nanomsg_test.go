@@ -60,7 +60,7 @@ func TestGetSetOpt(t *testing.T) {
 
 	if timeout, err := s.SendTimeout(); err != nil {
 		t.Fatal(err)
-	} else if timeout != -1 {
+	} else if timeout >= 0 {
 		t.Fatal("incorrect timeout", timeout)
 	}
 

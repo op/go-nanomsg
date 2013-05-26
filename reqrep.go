@@ -25,18 +25,16 @@ func NewReqSocket() (*ReqSocket, error) {
 	return &ReqSocket{socket}, err
 }
 
-// ResendIvl returns the resend interval. If reply is not received in specified
-// amount of time, the request will be automatically resent. Default value is 1
-// minute.
-func (req *ReqSocket) ResendIvl() (time.Duration, error) {
-	ivl, err := req.Socket.GetSockOptInt(C.NN_REQ, C.NN_REQ_RESEND_IVL)
-	return time.Duration(ivl) * time.Millisecond, err
+// ResendInterval returns the resend interval. If reply is not received in
+// specified amount of time, the request will be automatically resent. Default
+// value is 1 minute.
+func (req *ReqSocket) ResendInterval() (time.Duration, error) {
+	return req.Socket.SockOptDuration(C.NN_REQ, C.NN_REQ_RESEND_IVL, time.Millisecond)
 }
 
-// SetResendIvl sets the resend interval for requests.
-func (req *ReqSocket) SetResendIvl(ivl time.Duration) error {
-	ivlMs := int(ivl / time.Millisecond)
-	return req.Socket.SetSockOptInt(C.NN_REQ, C.NN_REQ_RESEND_IVL, ivlMs)
+// SetResendInterval sets the resend interval for requests.
+func (req *ReqSocket) SetResendInterval(interval time.Duration) error {
+	return req.Socket.SetSockOptDuration(C.NN_REQ, C.NN_REQ_RESEND_IVL, time.Millisecond, interval)
 }
 
 type RepSocket struct {

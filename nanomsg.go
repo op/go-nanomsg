@@ -10,6 +10,7 @@ import "C"
 import (
 	"reflect"
 	"runtime"
+	"syscall"
 	"time"
 	"unsafe"
 )
@@ -47,14 +48,37 @@ func NewSocket(domain Domain, protocol Protocol) (*Socket, error) {
 	// Create the socket object and make sure we call Close before freeing up the
 	// memory inside the Go runtime.
 	socket := &Socket{socket: soc}
-	runtime.SetFinalizer(socket, (*Socket).Close)
+	socket.setFinalizer()
 	return socket, nil
+}
+
+func (s *Socket) setFinalizer() {
+	runtime.SetFinalizer(s, (*Socket).Close)
 }
 
 // Close a socket.
 func (s *Socket) Close() error {
 	if rc, err := C.nn_close(s.socket); rc != 0 {
-		return nnError(err)
+		// If the close call was interrupted by the signal handler, nanomsg
+		// would return EINTR. All is good except when Close() is called by the
+		// Go runtime during garbage collection. When this happens, the Go
+		// runtime clears the finalizer before running it. Hence we need to set
+		// it again to avoid leaking resources.
+		//
+		// This has a couple of side-effects that might not be obvious.
+		//
+		// * If the user calls Close() two times, and the latter one is
+		//   interrupted we will queue yet another call to Close. (Most likely
+		//   the second call to nn_close will not block.)
+		//
+		// * If the user has set a custom finalizer, we would at this point
+		//   override it.
+		//
+		// However, all of these scenarios is an unexpected use of this library.
+		if err = nnError(err); err == syscall.EINTR {
+			s.setFinalizer()
+		}
+		return err
 	}
 	// Once the socket has been closed, we no longer need to call Close when the
 	// object is garbage collected.

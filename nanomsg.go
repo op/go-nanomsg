@@ -33,8 +33,8 @@ const (
 )
 
 type Socket struct {
+	// socket is the actual nanomsg C API object
 	socket C.int
-	closed bool
 }
 
 // Create a socket.
@@ -44,6 +44,8 @@ func NewSocket(domain Domain, protocol Protocol) (*Socket, error) {
 		return nil, nnError(err)
 	}
 
+	// Create the socket object and make sure we call Close before freeing up the
+	// memory inside the Go runtime.
 	socket := &Socket{socket: soc}
 	runtime.SetFinalizer(socket, (*Socket).Close)
 	return socket, nil
@@ -51,12 +53,12 @@ func NewSocket(domain Domain, protocol Protocol) (*Socket, error) {
 
 // Close a socket.
 func (s *Socket) Close() error {
-	if s.closed == false {
-		if rc, err := C.nn_close(s.socket); rc != 0 {
-			return nnError(err)
-		}
-		s.closed = true
+	if rc, err := C.nn_close(s.socket); rc != 0 {
+		return nnError(err)
 	}
+	// Once the socket has been closed, we no longer need to call Close when the
+	// object is garbage collected.
+	runtime.SetFinalizer(s, nil)
 	return nil
 }
 
@@ -172,7 +174,7 @@ func (s *Socket) SockOptDuration(level, option C.int, unit time.Duration) (time.
 // SetSockOptDuration sets the socket option as duration. unit is
 // used to specify the unit which nanomsg exposes the option as.
 func (s *Socket) SetSockOptDuration(level, option C.int, unit, value time.Duration) error {
-	return s.SetSockOptInt(level, option, int(value / unit))
+	return s.SetSockOptInt(level, option, int(value/unit))
 }
 
 // SetSockOptString sets the value of the option.

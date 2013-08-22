@@ -11,7 +11,7 @@ var Version struct {
 }
 
 func init() {
-	Version.Major = int(C.NN_VERSION_MAJOR)
-	Version.Minor = int(C.NN_VERSION_MINOR)
-	Version.Patch = int(C.NN_VERSION_PATCH)
+	Version.Major = int(C.NN_VERSION_CURRENT)
+	Version.Minor = int(C.NN_VERSION_REVISION)
+	Version.Patch = int(C.NN_VERSION_AGE)
 }

@@ -7,7 +7,7 @@ import (
 )
 
 func TestVersion(t *testing.T) {
-	if Version.Major != 0 {
+	if Version.Current != 0 {
 		t.Fatalf("Unexpected library version: %s", Version)
 	}
 }

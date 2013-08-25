@@ -30,7 +30,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	if err = s.SetTcpNoDelay(true); err != nil {
+	if err = s.SetTCPNoDelay(true); err != nil {
 		panic(err)
 	}
 	_, err = s.Bind(bindTo)

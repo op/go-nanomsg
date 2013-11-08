@@ -41,7 +41,7 @@ type Socket struct {
 // Create a socket.
 func NewSocket(domain Domain, protocol Protocol) (*Socket, error) {
 	soc, err := C.nn_socket(C.int(domain), C.int(protocol))
-	if err != nil {
+	if soc == -1 {
 		return nil, nnError(err)
 	}
 

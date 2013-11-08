@@ -12,7 +12,7 @@ func main() {
 	flag.Parse()
 
 	if flag.NArg() != 3 {
-		println("usage: local_lat <bind-to> <msg-size> <roundtrips")
+		println("usage: local_lat <bind-to> <msg-size> <roundtrips>")
 		os.Exit(1)
 	}
 

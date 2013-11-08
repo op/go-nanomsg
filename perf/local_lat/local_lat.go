@@ -26,7 +26,7 @@ func main() {
 		panic(err)
 	}
 
-	s, err := nanomsg.NewSocket(nanomsg.AF_SP, nanomsg.PAIR)
+	s, err := nanomsg.NewPairSocket()
 	if err != nil {
 		panic(err)
 	}

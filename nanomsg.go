@@ -40,14 +40,14 @@ type Socket struct {
 
 // Create a socket.
 func NewSocket(domain Domain, protocol Protocol) (*Socket, error) {
-	soc, err := C.nn_socket(C.int(domain), C.int(protocol))
-	if soc == -1 {
+	rc, err := C.nn_socket(C.int(domain), C.int(protocol))
+	if rc == -1 {
 		return nil, nnError(err)
 	}
 
 	// Create the socket object and make sure we call Close before freeing up the
 	// memory inside the Go runtime.
-	socket := &Socket{socket: soc}
+	socket := &Socket{socket: rc}
 	socket.setFinalizer()
 	return socket, nil
 }

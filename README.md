@@ -24,3 +24,8 @@ You can use `go get -u -a` to update all installed packages.
 For docs, see http://godoc.org/github.com/op/go-nanomsg or run:
 
     $ go doc github.com/op/go-nanomsg
+
+## Alternatives
+
+There is now also an implementation of nanomsg in pure Go. See
+https://bitbucket.org/gdamore/mangos for more details.

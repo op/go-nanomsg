@@ -4,7 +4,7 @@ Package nanomsg adds language bindings for nanomsg in Go. nanomsg is a
 high-performance implementation of several "scalability protocols". See
 http://nanomsg.org/ for more information.
 
-This is a work in progress. nanomsg is still in a pre-alpha stage. Expect its
+This is a work in progress. nanomsg is still in a beta stage. Expect its
 API, or this binding, to change.
 
 ## Installing

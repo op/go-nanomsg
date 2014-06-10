@@ -56,6 +56,23 @@ var errnoMap = map[syscall.Errno]syscall.Errno{
 	syscall.Errno(int(C.ENOTSOCK)):        syscall.ENOTSOCK,
 	syscall.Errno(int(C.EAFNOSUPPORT)):    syscall.EAFNOSUPPORT,
 	syscall.Errno(int(C.EPROTO)):          syscall.EPROTO,
+	syscall.Errno(int(C.EAGAIN)):          syscall.EAGAIN,
+	syscall.Errno(int(C.EBADF)):           syscall.EBADF,
+	syscall.Errno(int(C.EINVAL)):          syscall.EINVAL,
+	syscall.Errno(int(C.EMFILE)):          syscall.EMFILE,
+	syscall.Errno(int(C.EFAULT)):          syscall.EFAULT,
+	syscall.Errno(int(C.EACCESS)):         syscall.EACCES, // TODO typo in nanomsg
+	syscall.Errno(int(C.ENETRESET)):       syscall.ENETRESET,
+	syscall.Errno(int(C.ENETUNREACH)):     syscall.ENETUNREACH,
+	syscall.Errno(int(C.EHOSTUNREACH)):    syscall.EHOSTUNREACH,
+	syscall.Errno(int(C.ENOTCONN)):        syscall.ENOTCONN,
+	syscall.Errno(int(C.EMSGSIZE)):        syscall.EMSGSIZE,
+	syscall.Errno(int(C.ETIMEDOUT)):       syscall.ETIMEDOUT,
+	syscall.Errno(int(C.ECONNABORTED)):    syscall.ECONNABORTED,
+	syscall.Errno(int(C.ECONNRESET)):      syscall.ECONNRESET,
+	syscall.Errno(int(C.ENOPROTOOPT)):     syscall.ENOPROTOOPT,
+	syscall.Errno(int(C.EISCONN)):         syscall.EISCONN,
+	syscall.Errno(int(C.ESOCKTNOSUPPORT)): syscall.ESOCKTNOSUPPORT,
 }
 
 // nnError takes an error returned from the C nanomsg library and transforms it

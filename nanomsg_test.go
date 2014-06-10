@@ -69,6 +69,15 @@ func TestGetSetOpt(t *testing.T) {
 	} else if protocol != REQ {
 		t.Fatal(protocol)
 	}
+
+	if err = s.SetName("req-sock"); err != nil {
+		t.Fatal(err)
+	}
+	if name, err := s.Name(); err != nil {
+		t.Fatal(err)
+	} else if name != "req-sock" {
+		t.Fatal("incorrect name: " + name)
+	}
 }
 
 func BenchmarkInprocThroughput(b *testing.B) {

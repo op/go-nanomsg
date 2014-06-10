@@ -8,6 +8,7 @@ package nanomsg
 import "C"
 
 import (
+	"errors"
 	"reflect"
 	"runtime"
 	"syscall"
@@ -201,6 +202,25 @@ func (s *Socket) SetSockOptDuration(level, option C.int, unit, value time.Durati
 	return s.SetSockOptInt(level, option, int(value/unit))
 }
 
+// SockOptString returns the value of the option as string.
+func (s *Socket) SockOptString(level, option C.int, maxSize int) (string, error) {
+	size := C.size_t(maxSize) + 1
+	cval := (*C.char)(C.malloc(size))
+	if cval == nil {
+		return "", errors.New("nanomsg: failed to allocate socket string buffer")
+	}
+	defer C.free(unsafe.Pointer(cval))
+
+	rc, err := C.nn_getsockopt(s.socket, level, option, unsafe.Pointer(cval), &size)
+	if rc != 0 {
+		err = nnError(err)
+		return "", err
+	}
+
+	value := C.GoStringN(cval, C.int(size))
+	return value, nil
+}
+
 // SetSockOptString sets the value of the option.
 func (s *Socket) SetSockOptString(level, option C.int, value string) error {
 	cstr := C.CString(value)
@@ -347,6 +367,16 @@ func (s *Socket) Domain() (Domain, error) {
 func (s *Socket) Protocol() (Protocol, error) {
 	proto, err := s.SockOptInt(C.NN_SOL_SOCKET, C.NN_PROTOCOL)
 	return Protocol(proto), err
+}
+
+// Name returns the socket name for error reporting and statistics. Default
+// value is "socket.N" where N is socket integer.
+func (s *Socket) Name() (string, error) {
+	return s.SockOptString(C.NN_SOL_SOCKET, C.NN_SOCKET_NAME, 64)
+}
+
+func (s *Socket) SetName(name string) error {
+	return s.SetSockOptString(C.NN_SOL_SOCKET, C.NN_SOCKET_NAME, name)
 }
 
 type Endpoint struct {

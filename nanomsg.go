@@ -209,6 +209,19 @@ func (s *Socket) SetSockOptInt(level, option C.int, value int) error {
 	return nil
 }
 
+func (s *Socket) SockOptBool(level, option C.int) (bool, error) {
+	val, err := s.SockOptInt(level, option)
+	return vale != 0, err
+}
+
+func (s *Socket) SetSockOptBool(level, option C.int, b bool) error {
+	var value int
+	if b {
+		value = 1
+	}
+	return s.SetSockOptInt(level, option, value)
+}
+
 // SockOptDuration retrieves the socket option as duration. unit is
 // used to specify the unit which nanomsg exposes the option as.
 func (s *Socket) SockOptDuration(level, option C.int, unit time.Duration) (time.Duration, error) {
@@ -408,18 +421,13 @@ func (s *Socket) Protocol() (Protocol, error) {
 // IPv4Only returns true if only IPv4 addresses are used. If false, both IPv4
 // and IPv6 addresses are used.
 func (s *Socket) IPv4Only() (bool, error) {
-	val, err := s.SockOptInt(C.NN_SOL_SOCKET, C.NN_IPV4ONLY)
-	return val == 1, err
+	return s.SockOptBool(C.NN_SOL_SOCKET, C.NN_IPV4ONLY)
 }
 
 // SetIPv4Only sets the IPv4 mode. If onlyIPv4 is true, only IPv4 addresses are
 // used. If false, both IPv4 and IPv4 addresses are used.
 func (s *Socket) SetIPv4Only(onlyIPv4 bool) error {
-	var mode int
-	if onlyIPv4 {
-		mode = 1
-	}
-	return s.SetSockOptInt(C.NN_SOL_SOCKET, C.NN_IPV4ONLY, mode)
+	return s.SetSockOptBool(C.NN_SOL_SOCKET, C.NN_IPV4ONLY, onlyIPv4)
 }
 
 // Name returns the socket name for error reporting and statistics. Default

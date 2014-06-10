@@ -345,8 +345,23 @@ func (s *Socket) SendPrio() (int, error) {
 }
 
 // SetSendPrio sets the sending priority.
-func (s *Socket) SetSendPrio(sndPrio int) error {
-	return s.SetSockOptInt(C.NN_SOL_SOCKET, C.NN_SNDPRIO, sndPrio)
+func (s *Socket) SetSendPrio(prio int) error {
+	return s.SetSockOptInt(C.NN_SOL_SOCKET, C.NN_SNDPRIO, prio)
+}
+
+// RecvPrio sets inbound priority for endpoints subsequently added to the
+// socket. This option has no effect on socket types that are not able to
+// receive messages. When receiving a message, messages from peer with higher
+// priority are received before messages from peer with lower priority. The
+// type of the option is int. Highest priority is 1, lowest priority is 16.
+// Default value is 8.
+func (s *Socket) RecvPrio() (int, error) {
+	return s.SockOptInt(C.NN_SOL_SOCKET, C.NN_RCVPRIO)
+}
+
+// SetRecvPrio sets the receiving priority.
+func (s *Socket) SetRecvPrio(prio int) error {
+	return s.SetSockOptInt(C.NN_SOL_SOCKET, C.NN_RCVPRIO, prio)
 }
 
 func (s *Socket) SendFd() (uintptr, error) {

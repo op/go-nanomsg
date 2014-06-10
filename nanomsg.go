@@ -369,6 +369,21 @@ func (s *Socket) Protocol() (Protocol, error) {
 	return Protocol(proto), err
 }
 
+// IPv4Only returns true if only IPv4 addresses are used. If false, both IPv4
+// and IPv6 addresses are used.
+func (s *Socket) IPv4Only() (bool, error) {
+	val, err := s.SockOptInt(C.NN_SOL_SOCKET, C.NN_IPV4ONLY)
+	return val == 1, err
+}
+
+func (s *Socket) SetIPv4Only(onlyIPv4 bool) error {
+	var mode int
+	if onlyIPv4 {
+		mode = 1
+	}
+	return s.SetSockOptInt(C.NN_SOL_SOCKET, C.NN_IPV4ONLY, mode)
+}
+
 // Name returns the socket name for error reporting and statistics. Default
 // value is "socket.N" where N is socket integer.
 func (s *Socket) Name() (string, error) {

@@ -31,6 +31,9 @@ type Protocol int
 
 // Sending and receiving can be controlled with these flags.
 const (
+	// Specifies that the operation should be performed in non-blocking mode.
+	// If the message cannot be received or sent straight away, the function
+	// will fail with error EAGAIN.
 	DontWait = int(C.NN_DONTWAIT)
 )
 
@@ -57,7 +60,10 @@ func (s *Socket) setFinalizer() {
 	runtime.SetFinalizer(s, (*Socket).Close)
 }
 
-// Close a socket.
+// Close closes the socket. Any buffered inbound messages that were not yet
+// received by the application will be discarded. The library will try to
+// deliver any outstanding outbound messages for the time specified by the
+// linger socket option. The call will block in the meantime.
 func (s *Socket) Close() error {
 	if rc, err := C.nn_close(s.socket); rc != 0 {
 		// If the close call was interrupted by the signal handler, nanomsg
@@ -87,7 +93,15 @@ func (s *Socket) Close() error {
 	return nil
 }
 
-// Add a local endpoint to the socket.
+// Bind adds a local endpoint to the socket. The endpoint can be then used by
+// other applications to connect to.
+//
+// The address argument consists of two parts as follows:
+// 'transport'://'address'. The 'transport' specifies the underlying transport
+// protocol to use. The meaning of the 'address' part is specific to the
+// underlying transport protocol.
+//
+// Endpoint is returned and can be used to unbind.
 func (s *Socket) Bind(address string) (*Endpoint, error) {
 	cstr := C.CString(address)
 	defer C.free(unsafe.Pointer(cstr))
@@ -109,7 +123,9 @@ func (s *Socket) Connect(address string) (*Endpoint, error) {
 	return &Endpoint{address, eid}, nil
 }
 
-// Removes an endpoint from the socket.
+// Removes an endpoint from the socket. This call will return immediately,
+// however, the library will try to deliver any outstanding outbound messages
+// to the endpoint for the time specified by the linger socket option.
 func (s *Socket) Shutdown(endpoint *Endpoint) error {
 	if rc, err := C.nn_shutdown(s.socket, endpoint.endpoint); rc != 0 {
 		return nnError(err)
@@ -117,6 +133,8 @@ func (s *Socket) Shutdown(endpoint *Endpoint) error {
 	return nil
 }
 
+// Send sends a message containing the data. The flags argument can be zero or
+// DontWait.
 func (s *Socket) Send(data []byte, flags int) (int, error) {
 	var buf unsafe.Pointer
 	if len(data) != 0 {
@@ -130,6 +148,8 @@ func (s *Socket) Send(data []byte, flags int) (int, error) {
 	return int(size), nil
 }
 
+// Recv receives a message from the socket. The flags argument can be zero or
+// DontWait.
 func (s *Socket) Recv(flags int) ([]byte, error) {
 	var err error
 	var buf unsafe.Pointer
@@ -333,13 +353,12 @@ func (s *Socket) SetReconnectIntervalMax(interval time.Duration) error {
 	return s.SetSockOptDuration(C.NN_SOL_SOCKET, C.NN_RECONNECT_IVL_MAX, time.Millisecond, interval)
 }
 
-// SendPrio sets outbound priority for endpoints subsequently added to
-// the socket. This option has no effect on socket types that send
-// messages to all the peers. However, if the socket type sends each
-// message to a single peer (or a limited set of peers), peers with
-// high priority take precedence over peers with low priority. The
-// type of the option is int. Highest priority is 1, lowest priority
-// is 16. Default value is 8.
+// SendPrio sets outbound priority for endpoints subsequently added to the
+// socket. This option has no effect on socket types that send messages to all
+// the peers. However, if the socket type sends each message to a single peer
+// (or a limited set of peers), peers with high priority take precedence over
+// peers with low priority. The type of the option is int. Highest priority is
+// 1, lowest priority is 16. Default value is 8.
 func (s *Socket) SendPrio() (int, error) {
 	return s.SockOptInt(C.NN_SOL_SOCKET, C.NN_SNDPRIO)
 }
@@ -374,11 +393,13 @@ func (s *Socket) RecvFd() (uintptr, error) {
 	return uintptr(fd), err
 }
 
+// Domain returns the domain constant used when the socket was created.
 func (s *Socket) Domain() (Domain, error) {
 	domain, err := s.SockOptInt(C.NN_SOL_SOCKET, C.NN_DOMAIN)
 	return Domain(domain), err
 }
 
+// Protocol returns the protocol constant used when the socket was created.
 func (s *Socket) Protocol() (Protocol, error) {
 	proto, err := s.SockOptInt(C.NN_SOL_SOCKET, C.NN_PROTOCOL)
 	return Protocol(proto), err
@@ -391,6 +412,8 @@ func (s *Socket) IPv4Only() (bool, error) {
 	return val == 1, err
 }
 
+// SetIPv4Only sets the IPv4 mode. If onlyIPv4 is true, only IPv4 addresses are
+// used. If false, both IPv4 and IPv4 addresses are used.
 func (s *Socket) SetIPv4Only(onlyIPv4 bool) error {
 	var mode int
 	if onlyIPv4 {
@@ -400,11 +423,12 @@ func (s *Socket) SetIPv4Only(onlyIPv4 bool) error {
 }
 
 // Name returns the socket name for error reporting and statistics. Default
-// value is "socket.N" where N is socket integer.
+// value is "N" where N is socket integer.
 func (s *Socket) Name() (string, error) {
 	return s.SockOptString(C.NN_SOL_SOCKET, C.NN_SOCKET_NAME, 64)
 }
 
+// SetName sets the socket name for error reporting and statistics.
 func (s *Socket) SetName(name string) error {
 	return s.SetSockOptString(C.NN_SOL_SOCKET, C.NN_SOCKET_NAME, name)
 }

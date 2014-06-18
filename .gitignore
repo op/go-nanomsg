@@ -1,3 +1,4 @@
 *.test
+*.komodoproject
 /perf/local_lat/local_lat
 /perf/remote_thr/remote_thr

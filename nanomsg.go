@@ -211,7 +211,7 @@ func (s *Socket) SetSockOptInt(level, option C.int, value int) error {
 
 func (s *Socket) SockOptBool(level, option C.int) (bool, error) {
 	val, err := s.SockOptInt(level, option)
-	return vale != 0, err
+	return val != 0, err
 }
 
 func (s *Socket) SetSockOptBool(level, option C.int, b bool) error {

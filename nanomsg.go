@@ -160,7 +160,7 @@ func (s *Socket) Recv(flags int) ([]byte, error) {
 	}
 
 	// TODO why is the latter variant faster than the zero copy variant?
-	zeroCopy := true
+	zeroCopy := false
 	if zeroCopy {
 		capacity := int(length)
 		header := &reflect.SliceHeader{

@@ -28,4 +28,4 @@ For docs, see http://godoc.org/github.com/op/go-nanomsg or run:
 ## Alternatives
 
 There is now also an implementation of nanomsg in pure Go. See
-https://bitbucket.org/gdamore/mangos for more details.
+https://github.com/gdamore/mangos for more details.

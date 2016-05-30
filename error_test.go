@@ -29,7 +29,7 @@ func TestError(t *testing.T) {
 	if err = s.SetRecvTimeout(1 * time.Millisecond); err != nil {
 		t.Fatal(err)
 	}
-	if _, err = s.Recv(0); err != syscall.EAGAIN {
+	if _, err = s.Recv(0); err != syscall.ETIMEDOUT {
 		t.Fatal(err)
 	}
 

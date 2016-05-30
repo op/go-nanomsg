@@ -310,6 +310,21 @@ func (s *Socket) SetRecvBuffer(rcvBuf int64) error {
 	return s.SetSockOptInt(C.NN_SOL_SOCKET, C.NN_RCVBUF, int(rcvBuf))
 }
 
+// RecvMaxSize returns the maximum message size that can be received, in bytes.
+// Negative value means that the received size is limited only by available
+// addressable memory.
+func (s *Socket) RecvMaxSize() (int64, error) {
+	size, err := s.SockOptInt(C.NN_SOL_SOCKET, C.NN_RCVMAXSIZE)
+	return int64(size), err
+}
+
+// SetRecvMaxSize sets the maximum message size that can be received, in bytes.
+// Negative value means that the received size is limited only by available
+// addressable memory. Default is 1024kB.
+func (s *Socket) SetRecvMaxSize(size int64) error {
+	return s.SetSockOptInt(C.NN_SOL_SOCKET, C.NN_RCVMAXSIZE, int(size))
+}
+
 // SendTimeout returns the timeout for send operation on the socket.
 // If message cannot be sent within the specified timeout, ETIMEDOUT
 // error is returned. Negative value means infinite timeout. Default

@@ -311,7 +311,7 @@ func (s *Socket) SetRecvBuffer(rcvBuf int64) error {
 }
 
 // SendTimeout returns the timeout for send operation on the socket.
-// If message cannot be sent within the specified timeout, EAGAIN
+// If message cannot be sent within the specified timeout, ETIMEDOUT
 // error is returned. Negative value means infinite timeout. Default
 // value is infinite.
 func (s *Socket) SendTimeout() (time.Duration, error) {

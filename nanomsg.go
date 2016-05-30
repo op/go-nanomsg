@@ -431,7 +431,7 @@ func (s *Socket) SetIPv4Only(onlyIPv4 bool) error {
 }
 
 // Name returns the socket name for error reporting and statistics. Default
-// value is "N" where N is socket integer.
+// value is "N" where N is socket integer. This option is experimental.
 func (s *Socket) Name() (string, error) {
 	return s.SockOptString(C.NN_SOL_SOCKET, C.NN_SOCKET_NAME, 64)
 }

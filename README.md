@@ -9,6 +9,14 @@ API, or this binding, to change.
 
 ## Installing
 
+### Install nanomsg lib
+
+First, make sure you have the nanomsg library installed. You can either [download and install from source](http://nanomsg.org/download.html), or try your favorite package manager:
+
+    # using brew in osx 
+    brew install nanomsg
+
+
 ### Using *go get*
 
     $ go get github.com/op/go-nanomsg

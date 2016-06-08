@@ -15,7 +15,13 @@ manager of choice. 0.9 or later is required.
 
 ### Using *go get*
 
+Make sure nanomsg library is installed on your system and then run:
+
     $ go get github.com/op/go-nanomsg
+
+Or to use a local copy of nanomsg library for static linking run:
+
+    $ CGO_CFLAGS="-I/path/to/nanomsg/include" CGO_LDFLAGS="-L/path/to/nanomsg/lib -lnanomsg" go get github.com/op/go-nanomsg
 
 After this command *go-nanomsg* is ready to use. Its source will be in:
 

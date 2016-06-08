@@ -4,7 +4,7 @@ package nanomsg
 
 // #include <nanomsg/nn.h>
 // #include <stdlib.h>
-// #cgo pkg-config: libnanomsg
+// #cgo pkg-config: nanomsg
 import "C"
 
 import (

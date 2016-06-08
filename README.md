@@ -9,6 +9,10 @@ API, or this binding, to change.
 
 ## Installing
 
+This is a cgo based library and requires the nanomsg library to build. Install
+it either from [source](http://nanomsg.org/download.html) or use your package
+manager of choice. 0.9 or later is required.
+
 ### Using *go get*
 
     $ go get github.com/op/go-nanomsg

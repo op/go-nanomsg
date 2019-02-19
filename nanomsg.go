@@ -112,7 +112,7 @@ func (s *Socket) Bind(address string) (*Endpoint, error) {
 	return &Endpoint{address, eid}, nil
 }
 
-// Add a remote endpoint to the socket.
+// Connect adds a remote endpoint to the socket.
 func (s *Socket) Connect(address string) (*Endpoint, error) {
 	cstr := C.CString(address)
 	defer C.free(unsafe.Pointer(cstr))
@@ -123,7 +123,7 @@ func (s *Socket) Connect(address string) (*Endpoint, error) {
 	return &Endpoint{address, eid}, nil
 }
 
-// Removes an endpoint from the socket. This call will return immediately,
+// Shutdown removes an endpoint from the socket. This call will return immediately,
 // however, the library will try to deliver any outstanding outbound messages
 // to the endpoint for the time specified by the linger socket option.
 func (s *Socket) Shutdown(endpoint *Endpoint) error {
